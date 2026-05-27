@@ -1,0 +1,17 @@
+time_window_minutes: 3
+dbscan_eps: 0.3
+dbscan_min_samples: 1
+keep_threshold: 0.6
+weights:
+  gaze: 0.30
+  smile: 0.25
+  eyes: 0.20
+  sharpness: 0.15
+  exposure: 0.10
+clip_model: "ViT-B-32"
+clip_pretrained: "openai"
+insightface_model: "buffalo_l"
+det_size: [640, 640]
+output_dir: "output/curated"
+db_path: "photosorter.db"
+port: 8080
