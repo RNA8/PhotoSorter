@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhotoSorter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; min-height: 100vh; }
+    #progress-bar-wrap { background: #333; height: 6px; }
+    #progress-bar { background: #4caf50; height: 6px; width: 0; transition: width .3s; }
+    #progress-label { text-align: center; padding: 8px; font-size: 13px; color: #aaa; }
+    #grid { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px; justify-content: center; }
+    .card {
+      position: relative; cursor: pointer; border: 3px solid #555;
+      border-radius: 6px; overflow: hidden; width: 220px; transition: border-color .15s;
+    }
+    .card.keep { border-color: #4caf50; }
+    .card img { width: 100%; height: 160px; object-fit: cover; display: block; }
+    .card-info { padding: 6px 8px; font-size: 11px; background: #1e1e1e; }
+    .card-rank { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+    .bar-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .bar-label { width: 58px; color: #aaa; font-size: 10px; }
+    .bar-bg { flex: 1; background: #333; height: 5px; border-radius: 3px; }
+    .bar-fill { height: 5px; border-radius: 3px; background: #4caf50; }
+    .bar-val { width: 26px; text-align: right; color: #777; font-size: 10px; }
+    .badge {
+      position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,.6);
+      color: #eee; font-size: 12px; font-weight: bold; padding: 2px 7px; border-radius: 10px;
+    }
+    #footer {
+      position: sticky; bottom: 0; display: flex; justify-content: center;
+      align-items: center; gap: 20px; padding: 14px 20px;
+      background: #1a1a1a; border-top: 1px solid #333;
+    }
+    #submit-btn {
+      background: #4caf50; color: white; border: none; padding: 10px 36px;
+      font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
+    }
+    #submit-btn:hover { background: #43a047; }
+    #shortcuts { color: #555; font-size: 11px; line-height: 1.8; }
+    #done-screen { text-align: center; padding: 100px 20px; font-size: 22px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+  <div id="progress-label">Loading...</div>
+  <div id="grid"></div>
+  <div id="footer">
+    <button id="submit-btn">Submit &rarr;</button>
+    <div id="shortcuts">
+      <b>&rarr; / Enter</b> submit &nbsp;|&nbsp; <b>1&ndash;9</b> toggle photo &nbsp;|&nbsp;
+      <b>A</b> all/none &nbsp;|&nbsp; <b>Z</b> undo
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
