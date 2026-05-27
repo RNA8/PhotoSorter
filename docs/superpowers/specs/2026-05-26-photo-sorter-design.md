@@ -36,7 +36,7 @@ The pipeline (stages 1–5) runs once as a batch job. The web UI (stage 6) is se
 
 ## Stage 1: Ingestor
 
-- Recursively scans input folder for image files (JPEG, HEIC, PNG)
+- Recursively scans input folder for image files (JPEG, HEIC, PNG); HEIC support requires `pillow-heif` registered at startup
 - Extracts EXIF timestamp and GPS coordinates per photo
 - Falls back to file modification time if EXIF timestamp is absent
 - Writes photo records to SQLite
@@ -60,14 +60,12 @@ Edge cases:
 
 **Face analysis (InsightFace, GPU):**
 
-All faces in a photo are detected and scored individually:
+All faces in a photo are detected and each produces three signals:
 - **Gaze** — facing camera (0–1)
 - **Smile / expression** — positive expression (0–1)
-- **Eyes open** — binary (1 = both eyes open)
+- **Eyes open** — binary (1 = open, 0 = closed)
 
-Per-face score = `gaze × smile × eyes_open`
-
-Photo face score = average across all detected faces. Both adult and child faces are evaluated equally.
+Each signal is averaged independently across all detected faces to produce photo-level `gaze_score`, `smile_score`, and `eyes_score`. Both adult and child faces are evaluated equally.
 
 **Image quality (OpenCV, CPU):**
 - **Sharpness** — Laplacian variance, normalised within the moment group
@@ -76,7 +74,7 @@ Photo face score = average across all detected faces. Both adult and child faces
 
 ## Stage 4: Ranker
 
-Composite score per photo (0–1), configurable weights with these defaults:
+Composite score per photo (0–1) = weighted sum of five photo-level signals, configurable weights with these defaults:
 
 | Signal | Weight |
 |---|---|
@@ -86,7 +84,7 @@ Composite score per photo (0–1), configurable weights with these defaults:
 | Sharpness / motion blur | 15% |
 | Exposure | 10% |
 
-Weights are stored in `config.yaml`. The ranker also produces a **keep suggestion** per moment: photos that score significantly below the top (score drop-off heuristic) are excluded from the suggestion.
+Weights are stored in `config.yaml`. The ranker also produces a **keep suggestion** per moment: any photo scoring below 60% of the top photo's composite score in the group is excluded from the suggestion. This threshold is also configurable.
 
 ## Stage 5: SQLite Database
 
@@ -133,6 +131,7 @@ Selected photos are hard-linked into `output/curated/YYYY-MM-DD/` (falls back to
 |---|---|
 | Face analysis | `insightface` + `onnxruntime-gpu` |
 | Visual embeddings | `open_clip_torch` |
+| HEIC support | `pillow-heif` |
 | Clustering | `scikit-learn` (DBSCAN) |
 | Image quality | `opencv-python` |
 | Image loading / EXIF | `Pillow` |
