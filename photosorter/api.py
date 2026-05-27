@@ -61,6 +61,7 @@ def api_next_moment():
                 "suggested_keep": (
                     p['composite_score'] is not None
                     and top_score is not None
+                    and top_score > 0.0
                     and p['composite_score'] >= top_score * cfg.keep_threshold
                 ),
             }
