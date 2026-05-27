@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS decisions (
 def init_db(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)
     conn.commit()
     return conn
@@ -56,7 +57,7 @@ def insert_photo(conn, path, timestamp, gps_lat, gps_lon, exif_json) -> int:
         (path, timestamp, gps_lat, gps_lon, exif_json),
     )
     conn.commit()
-    if cur.lastrowid:
+    if cur.rowcount:
         return cur.lastrowid
     return conn.execute("SELECT id FROM photos WHERE path=?", (path,)).fetchone()[0]
 
@@ -133,10 +134,11 @@ def undo_last_moment(conn):
     photo_ids = [r[0] for r in conn.execute(
         "SELECT photo_id FROM moment_photos WHERE moment_id=?", (moment_id,)
     ).fetchall()]
-    conn.execute(
-        "DELETE FROM decisions WHERE photo_id IN ({})".format(",".join("?" * len(photo_ids))),
-        photo_ids,
-    )
+    if photo_ids:
+        conn.execute(
+            "DELETE FROM decisions WHERE photo_id IN ({})".format(",".join("?" * len(photo_ids))),
+            photo_ids,
+        )
     conn.execute("UPDATE moments SET reviewed_at=NULL WHERE id=?", (moment_id,))
     conn.commit()
     return moment_id

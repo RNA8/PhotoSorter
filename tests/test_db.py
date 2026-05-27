@@ -20,6 +20,14 @@ def test_insert_photo_idempotent(tmp_db):
     assert pid1 == pid2
 
 
+def test_insert_photo_idempotent_after_other_inserts(tmp_db):
+    pid1 = insert_photo(tmp_db, "/a.jpg", 100, None, None, '{}')
+    insert_photo(tmp_db, "/b.jpg", 101, None, None, '{}')
+    insert_photo(tmp_db, "/c.jpg", 102, None, None, '{}')
+    pid2 = insert_photo(tmp_db, "/a.jpg", 100, None, None, '{}')
+    assert pid1 == pid2
+
+
 def test_insert_moment_and_photos(tmp_db):
     pid1 = insert_photo(tmp_db, "/a.jpg", 1000, None, None, '{}')
     pid2 = insert_photo(tmp_db, "/b.jpg", 1001, None, None, '{}')
