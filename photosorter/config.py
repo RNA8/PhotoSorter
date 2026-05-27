@@ -27,11 +27,28 @@ class Config:
     port: int = 8080
 
 
+_CONFIG_FIELDS = {f.name for f in Config.__dataclass_fields__.values()}
+_WEIGHT_FIELDS = {f.name for f in Weights.__dataclass_fields__.values()}
+
+
 def load_config(path: str = "config.yaml") -> Config:
     with open(path) as f:
-        data = yaml.safe_load(f)
+        data = yaml.safe_load(f) or {}
+
     weights_data = data.pop("weights", {})
+    unknown_weights = set(weights_data) - _WEIGHT_FIELDS
+    if unknown_weights:
+        raise ValueError(f"{path}: unknown weights keys: {sorted(unknown_weights)}")
     data["weights"] = Weights(**weights_data)
+
     if "det_size" in data:
-        data["det_size"] = tuple(data["det_size"])
+        v = data["det_size"]
+        if not (isinstance(v, (list, tuple)) and len(v) == 2):
+            raise ValueError(f"{path}: det_size must be a list of two ints, got {v!r}")
+        data["det_size"] = tuple(v)
+
+    unknown = set(data) - _CONFIG_FIELDS
+    if unknown:
+        raise ValueError(f"{path}: unknown config keys: {sorted(unknown)}")
+
     return Config(**data)
