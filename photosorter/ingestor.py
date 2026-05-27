@@ -45,6 +45,8 @@ def extract_metadata(path: str) -> dict:
 def _read_exif(path: str) -> dict:
     try:
         img = Image.open(path)
+        if hasattr(img, 'getexif'):
+            return dict(img.getexif()) or {}
         return img._getexif() or {}
     except Exception:
         return {}
@@ -77,6 +79,6 @@ def _extract_gps(exif_data: dict) -> tuple:
 def _dms_to_decimal(dms, ref: str) -> float:
     d, m, s = float(dms[0]), float(dms[1]), float(dms[2])
     decimal = d + m / 60 + s / 3600
-    if ref in ('S', 'W'):
+    if str(ref).upper().strip() in ('S', 'W'):
         decimal = -decimal
     return decimal
